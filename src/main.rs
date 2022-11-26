@@ -1,5 +1,6 @@
+mod admin;
 mod auth;
-mod employees;
+mod base;
 mod error_handler;
 mod schema;
 mod services;
@@ -30,8 +31,8 @@ fn rocket() -> _ {
 
     let rocket = rocket::build()
         .mount("/", routes![index])
-        .mount("/employees", employees::routes())
-        .mount("/auth", auth::routes())
+        .mount("/api/v1/auth", auth::routes())
+        .mount("/admin", admin::routes())
         .register(
             "/",
             catchers![error_handler::not_found, error_handler::internal_error],

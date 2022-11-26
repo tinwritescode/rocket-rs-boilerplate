@@ -63,3 +63,13 @@ pub struct Token {
     pub token: String,
     pub expired_at: Option<String>,
 }
+
+#[derive(FromForm)]
+pub struct RefreshToken {
+    pub refresh_token: String,
+}
+
+#[derive(Serialize)]
+pub struct AccessToken {
+    pub access_token: String,
+}

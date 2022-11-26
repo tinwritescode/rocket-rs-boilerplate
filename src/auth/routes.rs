@@ -2,12 +2,11 @@ use super::{
     create_token, create_user, fetch_user_by_email, fetch_user_by_email_and_password, LoginUser,
 };
 use crate::{
-    auth::{model::NewUser, User, UserWithTokens},
+    auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     base::model::BaseResponse,
     error_handler::ErrorResponse,
 };
 use rocket::{form::Form, http::Status, serde::json::Json};
-use serde::Serialize;
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![register, login, refresh]
@@ -63,16 +62,6 @@ fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
             Json(ErrorResponse::new("Failed to create tokens".to_string())),
         )),
     }
-}
-
-#[derive(FromForm)]
-struct RefreshToken {
-    refresh_token: String,
-}
-
-#[derive(Serialize)]
-struct AccessToken {
-    pub access_token: String,
 }
 
 #[post("/refresh", data = "<refresh_token>")]

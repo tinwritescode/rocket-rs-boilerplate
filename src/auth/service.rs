@@ -5,8 +5,6 @@ use crate::auth::{Claims, Token, User};
 use crate::base::model::BaseServiceResult;
 use crate::error_handler::ErrorResponse;
 use crate::services::bcrypt::{hash, verify};
-use chrono::format::parse;
-use chrono::TimeZone;
 use diesel::{ExpressionMethods, SelectableHelper, SqliteConnection};
 use diesel::{QueryDsl, RunQueryDsl};
 use rocket::http::Status;

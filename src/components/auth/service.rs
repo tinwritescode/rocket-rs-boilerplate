@@ -1,16 +1,17 @@
 use std::i64;
 
 use super::{NewUser, TokenType, UserWithPassword};
-use crate::auth::{Claims, Token, User};
 use crate::base::model::BaseServiceResult;
+use crate::components::auth::{Claims, Token, User};
 use crate::error_handler::ErrorResponse;
 use crate::services::bcrypt::{hash, verify};
-use diesel::{ExpressionMethods, SelectableHelper, SqliteConnection};
+use diesel::data_types::PgTimestamp;
+use diesel::{ExpressionMethods, PgConnection, SelectableHelper};
 use diesel::{QueryDsl, RunQueryDsl};
 use rocket::http::Status;
 use rocket::serde::json::Json;
 
-pub fn create_user(&user: &NewUser, conn: &mut SqliteConnection) -> BaseServiceResult<usize> {
+pub fn create_user(&user: &NewUser, conn: &mut PgConnection) -> BaseServiceResult<usize> {
     use crate::schema::users::dsl::*;
 
     let mut user = user.clone();
@@ -36,7 +37,7 @@ pub fn create_user(&user: &NewUser, conn: &mut SqliteConnection) -> BaseServiceR
 
 pub fn fetch_user_by_email(
     email_address: &str,
-    conn: &mut SqliteConnection,
+    conn: &mut PgConnection,
 ) -> BaseServiceResult<UserWithPassword> {
     use crate::schema::users::dsl::*;
 
@@ -57,7 +58,7 @@ pub fn fetch_user_by_email(
 pub fn fetch_user_by_email_and_password(
     email_address: &str,
     password: &str,
-    conn: &mut SqliteConnection,
+    conn: &mut PgConnection,
 ) -> BaseServiceResult<UserWithPassword> {
     let user = fetch_user_by_email(email_address, conn);
 
@@ -76,10 +77,7 @@ pub fn fetch_user_by_email_and_password(
     }
 }
 
-pub fn fetch_user_by_id(
-    id: i32,
-    conn: &mut SqliteConnection,
-) -> BaseServiceResult<UserWithPassword> {
+pub fn fetch_user_by_id(id: i32, conn: &mut PgConnection) -> BaseServiceResult<UserWithPassword> {
     use crate::schema::users::dsl;
 
     let user = dsl::users
@@ -99,7 +97,7 @@ pub fn fetch_user_by_id(
 pub fn create_token(
     user_id: i32,
     token_type: TokenType,
-    conn: &mut SqliteConnection,
+    conn: &mut PgConnection,
 ) -> BaseServiceResult<String> {
     use jsonwebtoken::{encode, EncodingKey, Header};
 
@@ -142,22 +140,25 @@ pub fn create_token(
             .expect("Failed to create token");
             use crate::schema::tokens::dsl;
 
-            let refresh_token_expire_in_days =
-                std::env::var("REFRESH_TOKEN_EXPIRE_DAYS").expect("REFRESH_TOKEN must be set");
+            let expired_time = {
+                let refresh_token_expire_in_days =
+                    std::env::var("REFRESH_TOKEN_EXPIRE_DAYS").expect("REFRESH_TOKEN must be set");
+
+                (chrono::Utc::now()
+                    + chrono::Duration::days(
+                        refresh_token_expire_in_days
+                            .parse()
+                            .expect("Invalid number"),
+                    ))
+                .naive_utc()
+            };
 
             let result = diesel::insert_into(dsl::tokens)
                 .values((
                     dsl::user_id.eq(user_id),
                     dsl::token.eq(&token),
                     dsl::type_.eq("refresh"),
-                    dsl::expired_at.eq((chrono::Utc::now()
-                        + chrono::Duration::days(
-                            refresh_token_expire_in_days
-                                .parse()
-                                .expect("Invalid number"),
-                        ))
-                    .timestamp()
-                    .to_string()),
+                    dsl::expired_at.eq(expired_time),
                 ))
                 .execute(conn);
 
@@ -173,17 +174,17 @@ pub fn create_token(
     }
 }
 
-pub fn fetch_token(token: &str, conn: &mut SqliteConnection) -> BaseServiceResult<Token> {
+pub fn fetch_token(token: &str, conn: &mut PgConnection) -> BaseServiceResult<Token> {
     use crate::schema::tokens::dsl;
 
     let token = dsl::tokens
-        .select(Token::as_select())
         .filter(dsl::token.eq(token))
+        .select(Token::as_select())
         .first::<Token>(conn);
 
     match token {
         Ok(token) => {
-            let token_expired_at = token.expired_at.as_ref().unwrap().parse::<i64>().unwrap();
+            let token_expired_at = PgTimestamp::from(token.expired_at).0;
 
             if token_expired_at < chrono::Utc::now().timestamp() {
                 return Err((

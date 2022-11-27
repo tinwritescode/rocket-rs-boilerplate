@@ -2,8 +2,8 @@ use super::{
     create_token, create_user, fetch_user_by_email, fetch_user_by_email_and_password, LoginUser,
 };
 use crate::{
-    auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     base::model::BaseResponse,
+    components::auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     error_handler::ErrorResponse,
 };
 use rocket::{form::Form, http::Status, serde::json::Json};
@@ -68,7 +68,7 @@ fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
 fn refresh(refresh_token: Form<RefreshToken>) -> BaseResponse<AccessToken> {
     let refresh_token = refresh_token.into_inner();
     let conn = &mut crate::establish_connection();
-    let token = crate::auth::service::fetch_token(&refresh_token.refresh_token, conn);
+    let token = crate::components::auth::service::fetch_token(&refresh_token.refresh_token, conn);
 
     match token {
         Ok(token) => {

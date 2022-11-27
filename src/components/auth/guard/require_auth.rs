@@ -6,7 +6,7 @@ use rocket::{
     Request,
 };
 
-use crate::auth::Claims;
+use crate::components::Claims;
 
 pub struct AccessToken<'r>(&'r str);
 

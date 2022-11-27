@@ -1,5 +1,5 @@
 /target
 .vscode
 .env
-/web
+frontend
 .DS_Store

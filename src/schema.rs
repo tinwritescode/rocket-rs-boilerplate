@@ -1,42 +1,28 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    heroes (id) {
-        id -> Integer,
-        fantasy_name -> Text,
-        real_name -> Nullable<Text>,
-        spotted_photo -> Text,
-        strength_level -> Integer,
-    }
-}
-
-diesel::table! {
     tokens (id) {
-        id -> Integer,
-        user_id -> Integer,
-        token -> Text,
+        id -> Int4,
+        user_id -> Int4,
+        token -> Varchar,
         #[sql_name = "type"]
-        type_ -> Text,
-        expired_at -> Nullable<Timestamp>,
+        type_ -> Varchar,
+        expired_at -> Timestamp,
         updated_at -> Nullable<Timestamp>,
     }
 }
 
 diesel::table! {
     users (id) {
-        id -> Integer,
-        name -> Text,
-        email -> Text,
-        password -> Text,
+        id -> Int4,
+        name -> Varchar,
+        email -> Varchar,
+        password -> Varchar,
         email_verified_at -> Nullable<Timestamp>,
-        role -> Nullable<Text>,
+        role -> Nullable<Varchar>,
     }
 }
 
 diesel::joinable!(tokens -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    heroes,
-    tokens,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(tokens, users,);

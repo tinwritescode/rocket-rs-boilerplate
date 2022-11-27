@@ -1,5 +1,5 @@
 use crate::schema::*;
-use diesel::{Identifiable, Insertable, Queryable, Selectable};
+use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable)]
@@ -56,12 +56,12 @@ pub struct UserWithTokens {
     pub refresh_token: String,
 }
 
-#[derive(Queryable, Serialize, Selectable)]
+#[derive(Queryable, Selectable)]
 pub struct Token {
     pub id: i32,
     pub user_id: i32,
     pub token: String,
-    pub expired_at: Option<String>,
+    pub expired_at: PgTimestamp,
 }
 
 #[derive(FromForm)]

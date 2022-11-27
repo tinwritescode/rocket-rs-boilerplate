@@ -1926,6 +1926,7 @@ dependencies = [
  "dotenv",
  "jsonwebtoken",
  "okapi",
+ "regex",
  "rocket",
  "rocket_okapi",
  "schemars",

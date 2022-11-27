@@ -17,6 +17,7 @@ cargo-make = "0.36.3"
 okapi = { version = "0.7.0-rc.1" }
 rocket_okapi = { version = "0.8.0-rc.2", features = ["swagger", "rapidoc"] }
 schemars = "0.8.11"
+regex = "1.7.0"
 
 [tasks.watch]
 command = "cargo"

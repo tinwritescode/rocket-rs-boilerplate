@@ -3,7 +3,8 @@ use rocket::serde::json::Json;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
 
 use crate::components::posts::service::fetch_posts;
-use crate::{base::model::BaseResponse, components::Post};
+use crate::PostJson;
+use crate::{base::BaseResponse, components::Post};
 
 #[derive(FromForm)]
 pub struct LimitParam {
@@ -17,7 +18,7 @@ pub fn routes() -> (Vec<rocket::Route>, OpenApi) {
 
 #[openapi]
 #[get("/?<offset>&<limit>")]
-fn index(offset: i64, limit: i64) -> BaseResponse<Vec<Post>> {
+fn index(offset: i64, limit: i64) -> BaseResponse<Vec<PostJson>> {
     let conn = &mut crate::establish_connection();
 
     let posts = match fetch_posts(

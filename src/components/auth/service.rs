@@ -1,5 +1,5 @@
 use super::{NewUser, TokenType, UserWithPassword};
-use crate::base::model::BaseServiceResult;
+use crate::base::BaseServiceResult;
 use crate::components::auth::{Claims, Token, User};
 use crate::error_handler::ErrorResponse;
 use crate::utils::bcrypt::{hash, verify};
@@ -130,33 +130,34 @@ pub fn create_token(
             Ok(token)
         }
         TokenType::RefreshToken => {
-            let token = encode(
-                &Header::default(),
-                &user_id,
-                &EncodingKey::from_secret(secret.as_ref()),
-            )
-            .expect("Failed to create token");
             use crate::schema::tokens::dsl;
 
             let expired_time = {
                 let refresh_token_expire_in_days =
                     std::env::var("REFRESH_TOKEN_EXPIRE_DAYS").expect("REFRESH_TOKEN must be set");
 
+                //current time (accurate to seconds) + 30 days
                 (chrono::Utc::now()
                     + chrono::Duration::days(
                         refresh_token_expire_in_days
                             .parse()
                             .expect("Invalid number"),
                     ))
-                .naive_utc()
+                .timestamp()
             };
+            let token = encode(
+                &Header::default(),
+                &expired_time,
+                &EncodingKey::from_secret(secret.as_ref()),
+            )
+            .expect("Failed to create refresh token");
 
             let result = diesel::insert_into(dsl::tokens)
                 .values((
                     dsl::user_id.eq(user_id),
                     dsl::token.eq(&token),
                     dsl::type_.eq("refresh"),
-                    dsl::expired_at.eq(expired_time),
+                    dsl::expired_at.eq(PgTimestamp(expired_time)),
                 ))
                 .execute(conn);
 

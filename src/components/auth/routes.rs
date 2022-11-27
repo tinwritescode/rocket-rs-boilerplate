@@ -2,12 +2,13 @@ use super::{
     create_token, create_user, fetch_user_by_email, fetch_user_by_email_and_password, LoginUser,
 };
 use crate::{
-    base::model::BaseResponse,
+    base::BaseResponse,
     components::auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     error_handler::ErrorResponse,
+    DataResult,
 };
 use okapi::openapi3::OpenApi;
-use rocket::{form::Form, http::Status, serde::json::Json, Route};
+use rocket::{http::Status, serde::json::Json, Route};
 use rocket_okapi::{openapi, openapi_get_routes_spec};
 
 pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
@@ -16,8 +17,8 @@ pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
 
 #[openapi]
 #[post("/register", data = "<user>")]
-fn register(user: Form<NewUser>) -> BaseResponse<User> {
-    let user = user.into_inner();
+fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
+    let user = user.expect("Failed to parse user");
     let conn = &mut crate::establish_connection();
 
     let insert = match create_user(&user, conn) {
@@ -39,8 +40,8 @@ fn register(user: Form<NewUser>) -> BaseResponse<User> {
 
 #[openapi]
 #[post("/login", data = "<user>")]
-fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
-    let user = user.into_inner();
+fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
+    let user = user.expect("Failed to parse user");
     let conn = &mut crate::establish_connection();
 
     let user = match fetch_user_by_email_and_password(&user.email, &user.password, conn) {
@@ -61,17 +62,15 @@ fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
             access_token,
             refresh_token,
         })),
-        _ => Err((
-            Status::InternalServerError,
-            Json(ErrorResponse::new("Failed to create tokens".to_string())),
-        )),
+        (Err(err), _) => Err(err),
+        (_, Err(err)) => Err(err),
     }
 }
 
 #[openapi]
 #[post("/refresh", data = "<refresh_token>")]
-fn refresh(refresh_token: Form<RefreshToken>) -> BaseResponse<AccessToken> {
-    let refresh_token = refresh_token.into_inner();
+fn refresh(refresh_token: DataResult<'_, RefreshToken>) -> BaseResponse<AccessToken> {
+    let refresh_token = refresh_token.expect("Failed to parse refresh token");
     let conn = &mut crate::establish_connection();
     let token = crate::components::auth::service::fetch_token(&refresh_token.refresh_token, conn);
 

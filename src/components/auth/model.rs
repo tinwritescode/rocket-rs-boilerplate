@@ -1,5 +1,6 @@
-use crate::schema::*;
+use crate::{schema::*, validation::is_email};
 use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selectable};
+use rocket::form::{self};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -17,16 +18,18 @@ pub struct UserWithPassword {
     pub password: String,
 }
 
-#[derive(FromForm, Insertable, Clone, Copy, Debug, JsonSchema)]
+#[derive(FromForm, Insertable, Clone, Copy, Debug, JsonSchema, Deserialize)]
 #[diesel(table_name = users)]
 pub struct NewUser<'a> {
     pub name: &'a str,
+    #[field(validate = is_email())]
     pub email: &'a str,
     pub password: &'a str,
 }
 
-#[derive(FromForm, JsonSchema)]
+#[derive(FromForm, JsonSchema, Deserialize)]
 pub struct LoginUser<'a> {
+    #[field(validate = is_email())]
     pub email: &'a str,
     pub password: &'a str,
 }
@@ -65,7 +68,7 @@ pub struct Token {
     pub expired_at: PgTimestamp,
 }
 
-#[derive(FromForm, JsonSchema)]
+#[derive(FromForm, JsonSchema, Deserialize)]
 pub struct RefreshToken {
     pub refresh_token: String,
 }

@@ -6,7 +6,6 @@ use rocket::{
     Request,
 };
 use rocket_okapi::request::OpenApiFromRequest;
-use schemars::JsonSchema;
 
 use crate::components::Claims;
 

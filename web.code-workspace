@@ -3,10 +3,6 @@
     {
       "name": "rust-backend",
       "path": "."
-    },
-    {
-      "name": "web",
-      "path": "web"
     }
   ],
   "settings": {}

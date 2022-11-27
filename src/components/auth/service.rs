@@ -1,10 +1,8 @@
-use std::i64;
-
 use super::{NewUser, TokenType, UserWithPassword};
 use crate::base::model::BaseServiceResult;
 use crate::components::auth::{Claims, Token, User};
 use crate::error_handler::ErrorResponse;
-use crate::services::bcrypt::{hash, verify};
+use crate::utils::bcrypt::{hash, verify};
 use diesel::data_types::PgTimestamp;
 use diesel::{ExpressionMethods, PgConnection, SelectableHelper};
 use diesel::{QueryDsl, RunQueryDsl};

@@ -2,17 +2,19 @@ mod base;
 mod components;
 mod error_handler;
 mod schema;
-mod services;
+mod utils;
 
 #[macro_use]
 extern crate rocket;
 
+use base::model::BaseResponse;
 use diesel::{Connection, PgConnection};
 use dotenv::dotenv;
+use rocket::serde::json::Json;
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> BaseResponse<&'static str> {
+    Ok(Json("Hello, world!"))
 }
 
 pub fn establish_connection() -> PgConnection {
@@ -29,9 +31,11 @@ fn rocket() -> _ {
     dotenv().ok();
 
     let rocket = rocket::build()
+        .mount("/", rocket::fs::FileServer::from("public"))
         .mount("/", routes![index])
         .mount("/api/v1/auth", components::auth::routes())
         .mount("/admin", components::admin::routes())
+        .mount("/api/v1/posts", components::posts::routes())
         .register(
             "/",
             catchers![error_handler::not_found, error_handler::internal_error],

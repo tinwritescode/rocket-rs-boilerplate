@@ -1,8 +1,9 @@
 use crate::schema::*;
 use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selectable};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable)]
+#[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable, JsonSchema)]
 pub struct User {
     pub id: i32,
     pub name: String,
@@ -16,15 +17,15 @@ pub struct UserWithPassword {
     pub password: String,
 }
 
-#[derive(FromForm, Insertable, Clone, Copy, Debug)]
-#[table_name = "users"]
+#[derive(FromForm, Insertable, Clone, Copy, Debug, JsonSchema)]
+#[diesel(table_name = users)]
 pub struct NewUser<'a> {
     pub name: &'a str,
     pub email: &'a str,
     pub password: &'a str,
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, JsonSchema)]
 pub struct LoginUser<'a> {
     pub email: &'a str,
     pub password: &'a str,
@@ -43,13 +44,13 @@ pub struct Claims {
 }
 
 #[derive(Insertable)]
-#[table_name = "tokens"]
+#[diesel(table_name = tokens)]
 pub struct NewRefreshToken {
     pub user_id: i32,
     pub token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 pub struct UserWithTokens {
     pub user: User,
     pub access_token: String,
@@ -64,12 +65,12 @@ pub struct Token {
     pub expired_at: PgTimestamp,
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, JsonSchema)]
 pub struct RefreshToken {
     pub refresh_token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 pub struct AccessToken {
     pub access_token: String,
 }

@@ -1,45 +1,65 @@
-mod base;
-mod components;
-mod error_handler;
-mod schema;
-mod utils;
-
 #[macro_use]
 extern crate rocket;
 
-use base::model::BaseResponse;
-use diesel::{Connection, PgConnection};
 use dotenv::dotenv;
 use rocket::serde::json::Json;
+use rocket_okapi::rapidoc::{make_rapidoc, GeneralConfig, HideShowConfig, RapiDocConfig};
+use rocket_okapi::settings::UrlObject;
+use rocket_okapi::swagger_ui::{make_swagger_ui, SwaggerUIConfig};
+use rocket_okapi::{
+    mount_endpoints_and_merged_docs, openapi, openapi_get_routes, openapi_get_routes_spec,
+};
+use rust_backend::{base::model::BaseResponse, components, error_handler};
 
+#[openapi(tag = "home")]
 #[get("/")]
 fn index() -> BaseResponse<&'static str> {
     Ok(Json("Hello, world!"))
-}
-
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
-
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    PgConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
 
-    let rocket = rocket::build()
+    let mut rocket = rocket::build()
+        .mount(
+            "/swagger/",
+            make_swagger_ui(&SwaggerUIConfig {
+                url: "../v1/openapi.json".to_owned(),
+                ..Default::default()
+            }),
+        )
+        .mount(
+            "/rapidoc/",
+            make_rapidoc(&RapiDocConfig {
+                title: Some("My special documentation | RapiDoc".to_owned()),
+                general: GeneralConfig {
+                    spec_urls: vec![UrlObject::new("General", "../v1/openapi.json")],
+                    ..Default::default()
+                },
+                hide_show: HideShowConfig {
+                    allow_spec_url_load: false,
+                    allow_spec_file_load: false,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        )
         .mount("/", rocket::fs::FileServer::from("public"))
-        .mount("/", routes![index])
-        .mount("/api/v1/auth", components::auth::routes())
-        .mount("/admin", components::admin::routes())
-        .mount("/api/v1/posts", components::posts::routes())
         .register(
             "/",
             catchers![error_handler::not_found, error_handler::internal_error],
         );
+
+    let openapi_settings = rocket_okapi::settings::OpenApiSettings::default();
+
+    mount_endpoints_and_merged_docs! {
+        rocket, "/v1".to_owned(), openapi_settings,
+        "" => openapi_get_routes_spec![index],
+        "/api/v1/auth" => components::auth::routes(),
+        "/api/v1/posts" => components::posts::routes(),
+        "/admin" => components::admin::routes(),
+    };
 
     rocket
 }

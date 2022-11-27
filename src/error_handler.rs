@@ -2,8 +2,9 @@ use rocket::{
     http::Status,
     serde::{json::Json, Serialize},
 };
+use schemars::JsonSchema;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, JsonSchema)]
 pub struct ErrorResponse {
     error: String,
 }

@@ -6,12 +6,15 @@ use crate::{
     components::auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     error_handler::ErrorResponse,
 };
-use rocket::{form::Form, http::Status, serde::json::Json};
+use okapi::openapi3::OpenApi;
+use rocket::{form::Form, http::Status, serde::json::Json, Route};
+use rocket_okapi::{openapi, openapi_get_routes_spec};
 
-pub fn routes() -> Vec<rocket::Route> {
-    routes![register, login, refresh]
+pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
+    openapi_get_routes_spec![register, login, refresh]
 }
 
+#[openapi]
 #[post("/register", data = "<user>")]
 fn register(user: Form<NewUser>) -> BaseResponse<User> {
     let user = user.into_inner();
@@ -34,6 +37,7 @@ fn register(user: Form<NewUser>) -> BaseResponse<User> {
     Ok(Json(fetch_user_by_email(&user.email, conn).unwrap().user))
 }
 
+#[openapi]
 #[post("/login", data = "<user>")]
 fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
     let user = user.into_inner();
@@ -64,6 +68,7 @@ fn login(user: Form<LoginUser>) -> BaseResponse<UserWithTokens> {
     }
 }
 
+#[openapi]
 #[post("/refresh", data = "<refresh_token>")]
 fn refresh(refresh_token: Form<RefreshToken>) -> BaseResponse<AccessToken> {
     let refresh_token = refresh_token.into_inner();

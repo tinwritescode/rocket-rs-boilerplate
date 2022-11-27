@@ -5,10 +5,13 @@ use rocket::{
     request::{self, FromRequest},
     Request,
 };
+use rocket_okapi::request::OpenApiFromRequest;
+use schemars::JsonSchema;
 
 use crate::components::Claims;
 
-pub struct AccessToken<'r>(&'r str);
+#[derive(OpenApiFromRequest)]
+pub struct AccessToken(String);
 
 #[derive(Debug)]
 pub enum AccessTokenError {
@@ -17,7 +20,7 @@ pub enum AccessTokenError {
 }
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for AccessToken<'r> {
+impl<'r> FromRequest<'r> for AccessToken {
     type Error = AccessTokenError;
 
     async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
@@ -36,7 +39,7 @@ impl<'r> FromRequest<'r> for AccessToken<'r> {
                 )
                 .is_ok()
                 {
-                    Outcome::Success(AccessToken(token))
+                    Outcome::Success(AccessToken(token.to_string()))
                 } else {
                     Outcome::Failure((Status::Unauthorized, AccessTokenError::Invalid))
                 }

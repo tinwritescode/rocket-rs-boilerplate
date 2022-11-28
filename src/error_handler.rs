@@ -41,10 +41,10 @@ pub fn not_found(_req: &rocket::Request) -> (Status, Json<ErrorResponse>) {
 }
 
 #[catch(422)]
-pub fn unprocessable_entity(req: &rocket::Request) -> (Status, Json<ErrorResponse>) {
+pub fn unprocessable_entity(_req: &rocket::Request) -> (Status, Json<ErrorResponse>) {
     (
         Status::UnprocessableEntity,
-        Json(ErrorResponse::new(format!("Unprocessable entity"))),
+        Json(ErrorResponse::new("Unprocessable entity".to_string())),
     )
 }
 

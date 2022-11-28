@@ -12,8 +12,8 @@ use rocket::serde::json::Json;
 pub fn create_user(&user: &NewUser, conn: &mut PgConnection) -> BaseServiceResult<usize> {
     use crate::schema::users::dsl::*;
 
-    let mut user = user.clone();
-    let binding = hash(&user.password).map_err(|err| {
+    let mut user = user;
+    let binding = hash(user.password).map_err(|err| {
         (
             Status::InternalServerError,
             Json(ErrorResponse::new(err.to_string())),
@@ -183,7 +183,7 @@ pub fn fetch_token(token: &str, conn: &mut PgConnection) -> BaseServiceResult<To
 
     match token {
         Ok(token) => {
-            let token_expired_at = PgTimestamp::from(token.expired_at).0;
+            let token_expired_at = token.expired_at.0;
 
             if token_expired_at < chrono::Utc::now().timestamp() {
                 return Err((

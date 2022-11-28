@@ -4,7 +4,7 @@ use rocket_okapi::{openapi, openapi_get_routes_spec};
 
 use crate::components::posts::service::fetch_posts;
 use crate::PostJson;
-use crate::{base::BaseResponse, components::Post};
+use crate::{base::BaseResponse};
 
 #[derive(FromForm)]
 pub struct LimitParam {

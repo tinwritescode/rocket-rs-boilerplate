@@ -1,9 +1,9 @@
 use crate::{schema::*, validation::is_email};
 use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selectable};
-use rocket::form::{self};
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationError};
+use validator::{Validate};
 
 #[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable, JsonSchema)]
 pub struct User {

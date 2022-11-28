@@ -51,7 +51,7 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
         ));
     }
 
-    Ok(Json(fetch_user_by_email(&user.email, conn).unwrap().user))
+    Ok(Json(fetch_user_by_email(user.email, conn).unwrap().user))
 }
 
 #[openapi]
@@ -72,7 +72,7 @@ fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     }
     let conn = &mut crate::establish_connection();
 
-    let user = match fetch_user_by_email_and_password(&user.email, &user.password, conn) {
+    let user = match fetch_user_by_email_and_password(user.email, user.password, conn) {
         Ok(user) => user,
         Err(err) => {
             return Err(err);
@@ -80,8 +80,8 @@ fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     };
 
     let (access_token, refresh_token) = (
-        create_token(user.user.id, super::TokenType::AccessToken, conn).map_err(|err| err),
-        create_token(user.user.id, super::TokenType::RefreshToken, conn).map_err(|err| err),
+        create_token(user.user.id, super::TokenType::AccessToken, conn),
+        create_token(user.user.id, super::TokenType::RefreshToken, conn),
     );
 
     match (access_token, refresh_token) {
@@ -104,8 +104,7 @@ fn refresh(refresh_token: DataResult<'_, RefreshToken>) -> BaseResponse<AccessTo
 
     match token {
         Ok(token) => {
-            let access_token =
-                create_token(token.user_id, super::TokenType::AccessToken, conn).map_err(|err| err);
+            let access_token = create_token(token.user_id, super::TokenType::AccessToken, conn);
 
             match access_token {
                 Ok(access_token) => Ok(Json(AccessToken { access_token })),

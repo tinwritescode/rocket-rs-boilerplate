@@ -7,6 +7,6 @@ pub fn is_email(email: &str) -> Result<(), ValidationError> {
     if let true = email_regex.is_match(email) {
         Ok(())
     } else {
-        return Err(ValidationError::new("email"));
+        Err(ValidationError::new("email"))
     }
 }

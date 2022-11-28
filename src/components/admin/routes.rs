@@ -2,11 +2,13 @@ use okapi::openapi3::OpenApi;
 use rocket::serde::json::Json;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
 
-use crate::{base::BaseResponse, components::require_auth::AccessToken};
+use crate::{base::BaseResponse, components::require_auth::RequireAccessToken};
 
 #[openapi]
 #[get("/")]
-fn index(_a: AccessToken) -> BaseResponse<&'static str> {
+fn index(_a: RequireAccessToken) -> BaseResponse<&'static str> {
+    println!("{:?}", _a);
+
     Ok(Json("Hello, admin!"))
 }
 

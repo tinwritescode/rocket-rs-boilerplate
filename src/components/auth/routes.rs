@@ -10,6 +10,8 @@ use crate::{
 use okapi::openapi3::OpenApi;
 use rocket::{http::Status, serde::json::Json, Route};
 use rocket_okapi::{openapi, openapi_get_routes_spec};
+use schemars::_serde_json;
+use validator::Validate;
 
 pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
     openapi_get_routes_spec![register, login, refresh]
@@ -19,6 +21,20 @@ pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
 #[post("/register", data = "<user>")]
 fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
     let user = user.expect("Failed to parse user");
+    if let Err(e) = user.validate() {
+        return Err((
+            Status::BadRequest,
+            Json(ErrorResponse::new_with_data(
+                e.to_string(),
+                Some(
+                    e.into_errors()
+                        .into_iter()
+                        .map(|e| _serde_json::json!(e))
+                        .collect(),
+                ),
+            )),
+        ));
+    }
     let conn = &mut crate::establish_connection();
 
     let insert = match create_user(&user, conn) {
@@ -42,6 +58,18 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
 #[post("/login", data = "<user>")]
 fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     let user = user.expect("Failed to parse user");
+    if let Err(e) = user.validate() {
+        println!("{:?}", e.errors());
+        println!("{}", _serde_json::json!(e));
+
+        return Err((
+            Status::BadRequest,
+            Json(ErrorResponse::new_with_data(
+                e.to_string(),
+                Some(_serde_json::json!(e)),
+            )),
+        ));
+    }
     let conn = &mut crate::establish_connection();
 
     let user = match fetch_user_by_email_and_password(&user.email, &user.password, conn) {

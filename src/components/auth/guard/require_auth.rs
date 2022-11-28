@@ -9,8 +9,8 @@ use rocket_okapi::request::OpenApiFromRequest;
 
 use crate::components::Claims;
 
-#[derive(OpenApiFromRequest)]
-pub struct AccessToken(String);
+#[derive(OpenApiFromRequest, Debug)]
+pub struct RequireAccessToken(String);
 
 #[derive(Debug)]
 pub enum AccessTokenError {
@@ -19,7 +19,7 @@ pub enum AccessTokenError {
 }
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for AccessToken {
+impl<'r> FromRequest<'r> for RequireAccessToken {
     type Error = AccessTokenError;
 
     async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
@@ -38,7 +38,7 @@ impl<'r> FromRequest<'r> for AccessToken {
                 )
                 .is_ok()
                 {
-                    Outcome::Success(AccessToken(token.to_string()))
+                    Outcome::Success(RequireAccessToken(token.to_string()))
                 } else {
                     Outcome::Failure((Status::Unauthorized, AccessTokenError::Invalid))
                 }

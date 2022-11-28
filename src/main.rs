@@ -46,7 +46,12 @@ fn rocket() -> _ {
         .mount("/", rocket::fs::FileServer::from("public"))
         .register(
             "/",
-            catchers![error_handler::not_found, error_handler::internal_error],
+            catchers![
+                error_handler::not_found,
+                error_handler::internal_error,
+                error_handler::unprocessable_entity,
+                error_handler::default
+            ],
         );
 
     let openapi_settings = rocket_okapi::settings::OpenApiSettings::default();

@@ -3,6 +3,7 @@ use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selec
 use rocket::form::{self};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use validator::{Validate, ValidationError};
 
 #[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable, JsonSchema)]
 pub struct User {
@@ -18,18 +19,18 @@ pub struct UserWithPassword {
     pub password: String,
 }
 
-#[derive(FromForm, Insertable, Clone, Copy, Debug, JsonSchema, Deserialize)]
+#[derive(FromForm, Insertable, Clone, Copy, Debug, JsonSchema, Deserialize, Validate)]
 #[diesel(table_name = users)]
 pub struct NewUser<'a> {
     pub name: &'a str,
-    #[field(validate = is_email())]
+    #[validate(custom = "is_email")]
     pub email: &'a str,
     pub password: &'a str,
 }
 
-#[derive(FromForm, JsonSchema, Deserialize)]
+#[derive(JsonSchema, Deserialize, Validate)]
 pub struct LoginUser<'a> {
-    #[field(validate = is_email())]
+    #[validate(custom(function = "is_email", message = "Invalid email"))]
     pub email: &'a str,
     pub password: &'a str,
 }

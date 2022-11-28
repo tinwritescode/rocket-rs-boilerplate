@@ -11,7 +11,7 @@ use crate::components::posts::service::fetch_posts;
 use crate::require_auth::RequireAccessToken;
 use crate::{
     create_post, fetch_post_by_slug, remove_post_by_id, update_post_by_id, DataResult,
-    ErrorResponse, NewPostInput, PostJson, UpdatePostInput,
+    ErrorResponse, NewPostInput, PostJson, ResponseSuccess, UpdatePostInput,
 };
 
 #[derive(FromForm)]
@@ -42,7 +42,7 @@ fn index(offset: Option<i64>, limit: Option<i64>) -> BaseResponse<Vec<PostJson>>
         }
     };
 
-    Ok(Json(posts.to_vec()))
+    Ok(Json(ResponseSuccess::new(posts.to_vec())))
 }
 
 #[openapi(tag = "Blog")]
@@ -51,7 +51,7 @@ fn get_single_post(slug: &str) -> BaseResponse<PostJson> {
     let conn = &mut crate::establish_connection();
 
     match fetch_post_by_slug(slug, conn) {
-        Ok(post) => Ok(Json(post)),
+        Ok(post) => Ok(Json(ResponseSuccess::new(post))),
         Err(err) => Err(err),
     }
 }
@@ -82,7 +82,7 @@ fn post_create_post(
     }
 
     match create_post(post.0, conn) {
-        Ok(post) => Ok(Json(post)),
+        Ok(post) => Ok(Json(ResponseSuccess::new(post))),
         Err(err) => Err(err),
     }
 }
@@ -95,7 +95,7 @@ fn delete_post(_access_token: RequireAccessToken, id: i32) -> BaseResponse<PostJ
     // TODO: check if user is owner of post or admin
 
     match remove_post_by_id(id, conn) {
-        Ok(post) => Ok(Json(post)),
+        Ok(post) => Ok(Json(ResponseSuccess::new(post))),
         Err(err) => Err(err),
     }
 }
@@ -124,7 +124,7 @@ fn update_post(id: i32, post: DataResult<'_, UpdatePostInput>) -> BaseResponse<P
     }
 
     match update_post_by_id(id, post.0, conn) {
-        Ok(post) => Ok(Json(post)),
+        Ok(post) => Ok(Json(ResponseSuccess::new(post))),
         Err(err) => Err(err),
     }
 }

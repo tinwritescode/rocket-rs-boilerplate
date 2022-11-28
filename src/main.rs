@@ -7,12 +7,13 @@ use rocket_okapi::rapidoc::{make_rapidoc, GeneralConfig, HideShowConfig, RapiDoc
 use rocket_okapi::settings::UrlObject;
 use rocket_okapi::swagger_ui::{make_swagger_ui, SwaggerUIConfig};
 use rocket_okapi::{mount_endpoints_and_merged_docs, openapi, openapi_get_routes_spec};
+use rust_backend::ResponseSuccess;
 use rust_backend::{base::BaseResponse, components, error_handler};
 
 #[openapi(tag = "Home")]
 #[get("/")]
 fn index() -> BaseResponse<&'static str> {
-    Ok(Json("Hello, world!"))
+    Ok(Json(ResponseSuccess::new("Hello, world!")))
 }
 
 #[launch]

@@ -1,4 +1,4 @@
-use jsonwebtoken::{DecodingKey, Validation};
+
 use okapi::openapi3::{Object, SecurityRequirement, SecurityScheme, SecuritySchemeData};
 use rocket::{
     http::Status,
@@ -32,7 +32,6 @@ impl<'r> FromRequest<'r> for RequireAccessToken {
             0 => Outcome::Failure((Status::Unauthorized, AccessTokenError::Missing)),
             1 => {
                 let token = keys[0];
-                let secret = std::env::var("SECRET").expect("SECRET must be set");
 
                 if let Ok(claims) = decode(token) {
                     Outcome::Success(RequireAccessToken(claims))

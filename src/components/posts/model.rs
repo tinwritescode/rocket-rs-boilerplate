@@ -60,18 +60,38 @@ pub struct UpdatePost {
 
 #[derive(Deserialize, Validate, JsonSchema, FromForm)]
 pub struct NewPostInput {
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "Title must be between 1 and 255 characters"
+    ))]
     pub title: String,
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 2000,
+        message = "Body must be between 1 and 2000 characters"
+    ))]
     pub body: String,
 }
 
 #[derive(Deserialize, Validate, JsonSchema, FromForm)]
 pub struct UpdatePostInput {
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "Title must be between 1 and 255 characters"
+    ))]
     pub title: Option<String>,
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 2000,
+        message = "Body must be between 1 and 2000 characters"
+    ))]
     pub body: Option<String>,
-    #[validate(length(min = 1, max = 255))]
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "Slug must be between 1 and 255 characters"
+    ))]
     pub slug: Option<String>,
 }

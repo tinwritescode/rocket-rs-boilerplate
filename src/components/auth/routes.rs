@@ -5,7 +5,7 @@ use crate::{
     base::BaseResponse,
     components::auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
     error_handler::ErrorResponse,
-    DataResult,
+    DataResult, ResponseSuccess,
 };
 use okapi::openapi3::OpenApi;
 use rocket::{http::Status, serde::json::Json, Route};
@@ -51,7 +51,9 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
         ));
     }
 
-    Ok(Json(fetch_user_by_email(user.email, conn).unwrap().user))
+    Ok(Json(ResponseSuccess::new(
+        fetch_user_by_email(user.email, conn).unwrap().user,
+    )))
 }
 
 #[openapi(tag = "Auth")]
@@ -85,11 +87,11 @@ fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     );
 
     match (access_token, refresh_token) {
-        (Ok(access_token), Ok(refresh_token)) => Ok(Json(UserWithTokens {
+        (Ok(access_token), Ok(refresh_token)) => Ok(Json(ResponseSuccess::new(UserWithTokens {
             user: user.user,
             access_token,
             refresh_token,
-        })),
+        }))),
         (Err(err), _) => Err(err),
         (_, Err(err)) => Err(err),
     }
@@ -107,7 +109,7 @@ fn refresh(refresh_token: DataResult<'_, RefreshToken>) -> BaseResponse<AccessTo
             let access_token = create_token(token.user_id, super::TokenType::AccessToken, conn);
 
             match access_token {
-                Ok(access_token) => Ok(Json(AccessToken { access_token })),
+                Ok(access_token) => Ok(Json(ResponseSuccess::new(AccessToken { access_token }))),
                 Err(err) => Err(err),
             }
         }

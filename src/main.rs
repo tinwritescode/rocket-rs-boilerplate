@@ -9,7 +9,7 @@ use rocket_okapi::swagger_ui::{make_swagger_ui, SwaggerUIConfig};
 use rocket_okapi::{mount_endpoints_and_merged_docs, openapi, openapi_get_routes_spec};
 use rust_backend::{base::BaseResponse, components, error_handler};
 
-#[openapi(tag = "home")]
+#[openapi(tag = "Home")]
 #[get("/")]
 fn index() -> BaseResponse<&'static str> {
     Ok(Json("Hello, world!"))

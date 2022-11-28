@@ -4,7 +4,7 @@ use rocket_okapi::{openapi, openapi_get_routes_spec};
 
 use crate::{base::BaseResponse, components::require_auth::RequireAccessToken};
 
-#[openapi]
+#[openapi(tag = "Admin")]
 #[get("/")]
 fn index(_a: RequireAccessToken) -> BaseResponse<&'static str> {
     println!("{:?}", _a);

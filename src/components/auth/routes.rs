@@ -17,7 +17,7 @@ pub fn routes() -> (std::vec::Vec<Route>, OpenApi) {
     openapi_get_routes_spec![register, login, refresh]
 }
 
-#[openapi]
+#[openapi(tag = "Auth")]
 #[post("/register", data = "<user>")]
 fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
     let user = user.expect("Failed to parse user");
@@ -54,7 +54,7 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
     Ok(Json(fetch_user_by_email(user.email, conn).unwrap().user))
 }
 
-#[openapi]
+#[openapi(tag = "Auth")]
 #[post("/login", data = "<user>")]
 fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     let user = user.expect("Failed to parse user");
@@ -95,7 +95,7 @@ fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
     }
 }
 
-#[openapi]
+#[openapi(tag = "Auth")]
 #[post("/refresh", data = "<refresh_token>")]
 fn refresh(refresh_token: DataResult<'_, RefreshToken>) -> BaseResponse<AccessToken> {
     let refresh_token = refresh_token.expect("Failed to parse refresh token");

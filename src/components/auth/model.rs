@@ -3,7 +3,7 @@ use diesel::{data_types::PgTimestamp, Identifiable, Insertable, Queryable, Selec
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use validator::{Validate};
+use validator::Validate;
 
 #[derive(Queryable, Serialize, Debug, PartialEq, Eq, Identifiable, Selectable, JsonSchema)]
 pub struct User {

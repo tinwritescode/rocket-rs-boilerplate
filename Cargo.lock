@@ -1949,6 +1949,7 @@ dependencies = [
  "dotenv",
  "jsonwebtoken",
  "okapi",
+ "rand",
  "regex",
  "rocket",
  "rocket_okapi",

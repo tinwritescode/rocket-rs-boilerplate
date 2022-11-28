@@ -54,6 +54,7 @@ fn rocket() -> _ {
             ],
         );
 
+    // custom bearer
     let openapi_settings = rocket_okapi::settings::OpenApiSettings::default();
 
     mount_endpoints_and_merged_docs! {

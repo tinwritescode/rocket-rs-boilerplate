@@ -1,0 +1,20 @@
+{
+  "name": "rust-backend",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <a href=\"\" rel=\"noopener\">\r  <img width=200px height=200px src=\"https://i.imgur.com/6wj0hh6.jpg\" alt=\"Project logo\"></a>\r </p>",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "dev": "cargo watch -x run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinwritescode/wip-rust-as-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tinwritescode/wip-rust-as-backend/issues"
+  },
+  "homepage": "https://github.com/tinwritescode/wip-rust-as-backend#readme"
+}

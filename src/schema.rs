@@ -5,6 +5,7 @@ diesel::table! {
         id -> Int4,
         title -> Varchar,
         body -> Text,
+        slug -> Varchar,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         user_id -> Int4,
@@ -37,4 +38,8 @@ diesel::table! {
 diesel::joinable!(posts -> users (user_id));
 diesel::joinable!(tokens -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(posts, tokens, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    posts,
+    tokens,
+    users,
+);

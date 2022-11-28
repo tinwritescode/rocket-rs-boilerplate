@@ -11,10 +11,10 @@ use rocket_okapi::{
     request::{OpenApiFromRequest, RequestHeaderInput},
 };
 
-use crate::components::Claims;
+use crate::{decode, Claims};
 
 #[derive(Debug)]
-pub struct RequireAccessToken(String);
+pub struct RequireAccessToken(Claims);
 
 #[derive(Debug)]
 pub enum AccessTokenError {
@@ -34,15 +34,8 @@ impl<'r> FromRequest<'r> for RequireAccessToken {
                 let token = keys[0];
                 let secret = std::env::var("SECRET").expect("SECRET must be set");
 
-                if jsonwebtoken::decode::<Claims>(
-                    // skip bearer
-                    [&token[7..]].concat().as_str(),
-                    &DecodingKey::from_secret(secret.as_ref()),
-                    &Validation::default(),
-                )
-                .is_ok()
-                {
-                    Outcome::Success(RequireAccessToken(token.to_string()))
+                if let Ok(claims) = decode(token) {
+                    Outcome::Success(RequireAccessToken(claims))
                 } else {
                     Outcome::Failure((Status::Unauthorized, AccessTokenError::Invalid))
                 }

@@ -1,14 +1,19 @@
 use super::{LimitParam, Post};
 use crate::{
-    base::BaseServiceResult, slug::generate_slug, ErrorResponse, NewPost, NewPostInput, PostJson,
-    UpdatePost, UpdatePostInput,
+    base::BaseServiceResult, slug::generate_slug, NewPost, NewPostInput, PaginateMeta, PostJson,
+    ResponseError, UpdatePost, UpdatePostInput,
 };
 use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
-
 use rocket::{http::Status, serde::json::Json};
 
-pub fn fetch_posts(param: LimitParam, conn: &mut PgConnection) -> BaseServiceResult<Vec<PostJson>> {
+pub fn fetch_posts(
+    param: LimitParam,
+    conn: &mut PgConnection,
+) -> BaseServiceResult<(Vec<PostJson>, PaginateMeta)> {
     use crate::schema::posts::dsl::*;
+
+    dbg!(param.limit);
+    dbg!(param.offset);
 
     let limit = param.limit.unwrap_or(10);
     let offset = param.offset.unwrap_or(0);
@@ -23,7 +28,13 @@ pub fn fetch_posts(param: LimitParam, conn: &mut PgConnection) -> BaseServiceRes
         .map(|post| post.attach())
         .collect();
 
-    Ok(results)
+    let paginate_meta = PaginateMeta {
+        limit,
+        offset,
+        total: posts.count().get_result::<i64>(conn).unwrap(),
+    };
+
+    Ok((results, paginate_meta))
 }
 
 pub fn fetch_post_by_id(post_id: i32, conn: &mut PgConnection) -> BaseServiceResult<PostJson> {
@@ -36,7 +47,7 @@ pub fn fetch_post_by_id(post_id: i32, conn: &mut PgConnection) -> BaseServiceRes
 
     match result {
         Ok(post) => Ok(post.attach()),
-        Err(err) => Err((Status::NotFound, Json(ErrorResponse::new(err.to_string())))),
+        Err(err) => Err((Status::NotFound, Json(ResponseError::new(err.to_string())))),
     }
 }
 
@@ -50,7 +61,7 @@ pub fn fetch_post_by_slug(post_slug: &str, conn: &mut PgConnection) -> BaseServi
 
     match result {
         Ok(post) => Ok(post.attach()),
-        Err(err) => Err((Status::NotFound, Json(ErrorResponse::new(err.to_string())))),
+        Err(err) => Err((Status::NotFound, Json(ResponseError::new(err.to_string())))),
     }
 }
 
@@ -75,7 +86,7 @@ pub fn create_post(
         Ok(post) => Ok(post.attach()),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }
@@ -91,7 +102,7 @@ pub fn remove_post_by_id(post_id: i32, conn: &mut PgConnection) -> BaseServiceRe
         Ok(post) => Ok(post.attach()),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }
@@ -115,7 +126,7 @@ pub fn update_post_by_id(
         Ok(post) => Ok(post.attach()),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }

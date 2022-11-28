@@ -1,7 +1,7 @@
 use super::{NewUser, TokenType, UserWithPassword};
 use crate::base::BaseServiceResult;
 use crate::components::auth::{Claims, Token, User};
-use crate::error_handler::ErrorResponse;
+use crate::error_handler::ResponseError;
 use crate::utils::bcrypt::{hash, verify};
 use diesel::data_types::PgTimestamp;
 use diesel::{ExpressionMethods, PgConnection, SelectableHelper};
@@ -16,7 +16,7 @@ pub fn create_user(&user: &NewUser, conn: &mut PgConnection) -> BaseServiceResul
     let binding = hash(user.password).map_err(|err| {
         (
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )
     })?;
 
@@ -28,7 +28,7 @@ pub fn create_user(&user: &NewUser, conn: &mut PgConnection) -> BaseServiceResul
         Ok(insert) => Ok(insert),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }
@@ -48,7 +48,7 @@ pub fn fetch_user_by_email(
         Ok(user) => Ok(user),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }
@@ -67,7 +67,7 @@ pub fn fetch_user_by_email_and_password(
             } else {
                 Err((
                     Status::Unauthorized,
-                    Json(ErrorResponse::new("Invalid credentials".to_string())),
+                    Json(ResponseError::new("Invalid credentials".to_string())),
                 ))
             }
         }
@@ -87,7 +87,7 @@ pub fn fetch_user_by_id(id: i32, conn: &mut PgConnection) -> BaseServiceResult<U
         Ok(user) => Ok(user),
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }
@@ -164,7 +164,7 @@ pub fn create_token(
             if let Err(err) = result {
                 return Err((
                     Status::InternalServerError,
-                    Json(ErrorResponse::new(err.to_string())),
+                    Json(ResponseError::new(err.to_string())),
                 ));
             }
 
@@ -188,7 +188,7 @@ pub fn fetch_token(token: &str, conn: &mut PgConnection) -> BaseServiceResult<To
             if token_expired_at < chrono::Utc::now().timestamp() {
                 return Err((
                     Status::Unauthorized,
-                    Json(ErrorResponse::new("Token is expired".to_string())),
+                    Json(ResponseError::new("Token is expired".to_string())),
                 ));
             }
 
@@ -196,7 +196,7 @@ pub fn fetch_token(token: &str, conn: &mut PgConnection) -> BaseServiceResult<To
         }
         Err(err) => Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new(err.to_string())),
+            Json(ResponseError::new(err.to_string())),
         )),
     }
 }

@@ -11,7 +11,7 @@ use crate::components::posts::service::fetch_posts;
 use crate::require_auth::RequireAccessToken;
 use crate::{
     create_post, fetch_post_by_slug, remove_post_by_id, update_post_by_id, DataResult,
-    ErrorResponse, NewPostInput, PostJson, ResponseSuccess, UpdatePostInput,
+    NewPostInput, PostJson, ResponseError, ResponseSuccess, UpdatePostInput,
 };
 
 #[derive(FromForm)]
@@ -35,14 +35,17 @@ pub fn routes() -> (Vec<rocket::Route>, OpenApi) {
 fn index(offset: Option<i64>, limit: Option<i64>) -> BaseResponse<Vec<PostJson>> {
     let conn = &mut crate::establish_connection();
 
-    let posts = match fetch_posts(LimitParam { limit, offset }, conn) {
+    let (posts, paginate_meta) = match fetch_posts(LimitParam { limit, offset }, conn) {
         Ok(posts) => posts,
         Err(err) => {
             return Err(err);
         }
     };
 
-    Ok(Json(ResponseSuccess::new(posts.to_vec())))
+    Ok(Json(ResponseSuccess::new_with_meta(
+        posts.to_vec(),
+        paginate_meta,
+    )))
 }
 
 #[openapi(tag = "Blog")]
@@ -69,7 +72,7 @@ fn post_create_post(
     if let Err(e) = post.validate() {
         return Err((
             Status::BadRequest,
-            Json(ErrorResponse::new_with_data(
+            Json(ResponseError::new_with_data(
                 e.to_string(),
                 Some(
                     e.into_errors()
@@ -111,7 +114,7 @@ fn update_post(id: i32, post: DataResult<'_, UpdatePostInput>) -> BaseResponse<P
     if let Err(e) = post.validate() {
         return Err((
             Status::BadRequest,
-            Json(ErrorResponse::new_with_data(
+            Json(ResponseError::new_with_data(
                 e.to_string(),
                 Some(
                     e.into_errors()

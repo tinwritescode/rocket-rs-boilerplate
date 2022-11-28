@@ -4,7 +4,7 @@ use super::{
 use crate::{
     base::BaseResponse,
     components::auth::{model::NewUser, AccessToken, RefreshToken, User, UserWithTokens},
-    error_handler::ErrorResponse,
+    error_handler::ResponseError,
     DataResult, ResponseSuccess,
 };
 use okapi::openapi3::OpenApi;
@@ -24,7 +24,7 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
     if let Err(e) = user.validate() {
         return Err((
             Status::BadRequest,
-            Json(ErrorResponse::new_with_data(
+            Json(ResponseError::new_with_data(
                 e.to_string(),
                 Some(
                     e.into_errors()
@@ -47,7 +47,7 @@ fn register(user: DataResult<'_, NewUser>) -> BaseResponse<User> {
     if insert != 1 {
         return Err((
             Status::InternalServerError,
-            Json(ErrorResponse::new("Failed to create user".to_string())),
+            Json(ResponseError::new("Failed to create user".to_string())),
         ));
     }
 
@@ -66,7 +66,7 @@ fn login(user: DataResult<'_, LoginUser>) -> BaseResponse<UserWithTokens> {
 
         return Err((
             Status::BadRequest,
-            Json(ErrorResponse::new_with_data(
+            Json(ResponseError::new_with_data(
                 e.to_string(),
                 Some(_serde_json::json!(e)),
             )),

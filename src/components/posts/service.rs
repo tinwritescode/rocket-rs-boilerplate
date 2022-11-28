@@ -12,9 +12,6 @@ pub fn fetch_posts(
 ) -> BaseServiceResult<(Vec<PostJson>, PaginateMeta)> {
     use crate::schema::posts::dsl::*;
 
-    dbg!(param.limit);
-    dbg!(param.offset);
-
     let limit = param.limit.unwrap_or(10);
     let offset = param.offset.unwrap_or(0);
 

@@ -52,7 +52,7 @@ pub fn unprocessable_entity(_req: &rocket::Request) -> (Status, Json<ResponseErr
 #[catch(default)]
 pub fn default() -> (Status, Json<ResponseError>) {
     (
-        Status::InternalServerError,
-        Json(ResponseError::new("Please try again later".to_string())),
+        Status::Unauthorized,
+        Json(ResponseError::new("Unauthorized".to_string())),
     )
 }

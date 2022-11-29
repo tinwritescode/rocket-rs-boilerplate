@@ -1,4 +1,4 @@
-
+use crate::{decode, Claims};
 use okapi::openapi3::{Object, SecurityRequirement, SecurityScheme, SecuritySchemeData};
 use rocket::{
     http::Status,
@@ -10,8 +10,6 @@ use rocket_okapi::{
     gen::OpenApiGenerator,
     request::{OpenApiFromRequest, RequestHeaderInput},
 };
-
-use crate::{decode, Claims};
 
 #[derive(Debug)]
 pub struct RequireAccessToken(Claims);

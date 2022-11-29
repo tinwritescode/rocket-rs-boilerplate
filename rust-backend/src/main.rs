@@ -44,7 +44,10 @@ fn rocket() -> _ {
                 ..Default::default()
             }),
         )
-        .mount("/", rocket::fs::FileServer::from("public"))
+        .mount(
+            "/",
+            rocket::fs::FileServer::from(format!("{}/public", env!("CARGO_MANIFEST_DIR")).as_str()),
+        )
         .register(
             "/",
             catchers![
